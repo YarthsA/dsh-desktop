@@ -44,7 +44,7 @@ public sealed class TrayIcon : IDisposable
             AutoSize = false,
             Width = 220,   // 与菜单等宽：文字/高亮/卡片水平中心对齐到菜单中心
             Height = 46,
-            TextAlign = ContentAlignment.MiddleCenter,
+            TextAlign = ContentAlignment.MiddleLeft,
             Padding = Forms.Padding.Empty,
             Margin = new Forms.Padding(0),
             Font = new Font("Microsoft YaHei UI", 12f),
@@ -105,7 +105,9 @@ public sealed class TrayIcon : IDisposable
             e.Graphics.DrawPath(pen, path);
         }
 
-        // 悬停高亮：左右打通的整块灰色，无圆角；裁剪到菜单圆角形状内避免溢出四角
+        // 悬停高亮：左右打通的整块灰色，无圆角；裁剪到菜单圆角形状内避免溢出四角。
+        // e.Graphics 已 translate 到 item 原点：高亮和 clip 都必须用 item 相对坐标，
+        // 否则非首项会被双重偏移画到菜单外（旧版"退出无高亮"的根因）。
         protected override void OnRenderMenuItemBackground(Forms.ToolStripItemRenderEventArgs e)
         {
             if (!e.Item.Selected)
@@ -113,25 +115,24 @@ public sealed class TrayIcon : IDisposable
                 base.OnRenderMenuItemBackground(e);
                 return;
             }
-            var r = e.Item.Bounds;
+            var r = new Rectangle(Point.Empty, e.Item.Size);
             using var brush = new SolidBrush(Color.FromArgb(58, 58, 65));
             var state = e.Graphics.Save();
             using (var clip = RoundedRect(
-                new Rectangle(0, 0, e.ToolStrip!.Width - 1, e.ToolStrip.Height - 1), Radius))
+                new Rectangle(-e.Item.Bounds.X, -e.Item.Bounds.Y,
+                    e.ToolStrip!.Width - 1, e.ToolStrip.Height - 1), Radius))
                 e.Graphics.SetClip(clip, CombineMode.Intersect);
             e.Graphics.FillRectangle(brush, r);
             e.Graphics.Restore(state);
         }
 
-        // 直接在整块卡片 bounds 上水平+垂直居中绘制文字：
-        // 规避 e.TextRectangle 被布局引擎放到卡片顶部、VerticalCenter 只在
-        // "贴顶矩形"里居中导致文字整体偏上的问题
+        // TextRectangle 是 item 相对坐标；改为整块卡片左偏区交给 base 渲染：
+        // base 路径对非首项有效（自绘 GDI 在 translate 下会双重偏移致文字消失）。
+        // TextFormat 只含 VerticalCenter（无 HorizontalCenter）→ 文字靠左 + 垂直居中。
         protected override void OnRenderItemText(Forms.ToolStripItemTextRenderEventArgs e)
         {
-            var r = e.Item.Bounds;
-            Forms.TextRenderer.DrawText(e.Graphics, e.Text, e.TextFont, r, e.TextColor,
-                Forms.TextFormatFlags.HorizontalCenter | Forms.TextFormatFlags.VerticalCenter
-                | Forms.TextFormatFlags.SingleLine);
+            e.TextRectangle = new Rectangle(12, 0, e.Item.Width - 12, e.Item.Height);
+            base.OnRenderItemText(e);
         }
 
         private static GraphicsPath RoundedRect(Rectangle r, int radius)
