@@ -18,7 +18,9 @@ jobs:
 
       - name: Restore
         working-directory: app
-        run: dotnet restore
+        # restore 必须与 build/publish 使用同一 RID，否则 assets 文件缺少
+        # net10.0-windows/win-x64 目标，后续 --no-restore 构建会报 NETSDK1047
+        run: dotnet restore -r win-x64
 
       - name: Build
         working-directory: app
