@@ -71,7 +71,7 @@ public sealed class TrayIcon : IDisposable
     private sealed class DarkColorTable : Forms.ProfessionalColorTable
     {
         public override Color ToolStripDropDownBackground => Color.FromArgb(28, 29, 34);
-        public override Color MenuItemSelected => Color.FromArgb(52, 73, 94);
+        public override Color MenuItemSelected => Color.FromArgb(58, 58, 65);
         public override Color MenuItemBorder => Color.Transparent;
         public override Color MenuBorder => Color.FromArgb(80, 82, 90);
         public override Color SeparatorDark => Color.FromArgb(58, 60, 68);
@@ -103,6 +103,29 @@ public sealed class TrayIcon : IDisposable
             using var pen = new Pen(Color.FromArgb(96, 92, 94, 102), 1);
             e.Graphics.SmoothingMode = SmoothingMode.AntiAlias;
             e.Graphics.DrawPath(pen, path);
+        }
+
+        // 悬停高亮：圆角灰色块，与主窗口标题栏按钮的悬停色（#3A3A41）保持一致
+        protected override void OnRenderMenuItemBackground(Forms.ToolStripItemRenderEventArgs e)
+        {
+            if (!e.Item.Selected)
+            {
+                base.OnRenderMenuItemBackground(e);
+                return;
+            }
+            var r = e.Item.Bounds;
+            var bounds = new Rectangle(r.X + 2, r.Y + 1, r.Width - 4, r.Height - 2);
+            using var path = RoundedRect(bounds, 6);
+            using var brush = new SolidBrush(Color.FromArgb(58, 58, 65));
+            e.Graphics.SmoothingMode = SmoothingMode.AntiAlias;
+            e.Graphics.FillPath(brush, path);
+        }
+
+        // 强制水平+垂直居中，规避 ToolStripMenuItem TextAlign 在部分布局下的偏差
+        protected override void OnRenderItemText(Forms.ToolStripItemTextRenderEventArgs e)
+        {
+            e.TextFormat |= Forms.TextFormatFlags.HorizontalCenter | Forms.TextFormatFlags.VerticalCenter;
+            base.OnRenderItemText(e);
         }
 
         private static GraphicsPath RoundedRect(Rectangle r, int radius)

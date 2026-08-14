@@ -11,15 +11,19 @@
         IsHitTestVisible="False"
         SizeToContent="WidthAndHeight"
         WindowStartupLocation="CenterScreen">
-    <Grid>
-        <Ellipse x:Name="Glow" Width="184" Height="184">
+    <Grid Width="264" Height="264">
+        <Ellipse x:Name="Glow" Width="200" Height="200">
             <Ellipse.Fill>
                 <RadialGradientBrush>
-                    <GradientStop Color="#26FFFFFF" Offset="0.0"/>
-                    <GradientStop Color="#0FFFFFFF" Offset="0.5"/>
+                    <GradientStop Color="#2EFFFFFF" Offset="0.0"/>
+                    <GradientStop Color="#14FFFFFF" Offset="0.35"/>
+                    <GradientStop Color="#07FFFFFF" Offset="0.7"/>
                     <GradientStop Color="#00FFFFFF" Offset="1.0"/>
                 </RadialGradientBrush>
             </Ellipse.Fill>
+            <Ellipse.Effect>
+                <BlurEffect Radius="16"/>
+            </Ellipse.Effect>
         </Ellipse>
         <Image x:Name="Logo"
                Source="pack://application:,,,/dsh-icon.png"
