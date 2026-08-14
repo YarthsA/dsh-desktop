@@ -25,7 +25,7 @@ public sealed class TrayIcon : IDisposable
             Renderer = new RoundedMenuRenderer(),
         };
         menu.Items.Add(MenuItem("显示", showWindow));
-        menu.Items.Add(new Forms.ToolStripSeparator { Margin = new Forms.Padding(0) });
+        menu.Items.Add(new Forms.ToolStripSeparator { Margin = new Forms.Padding(0), Width = 220 });
         menu.Items.Add(MenuItem("退出", exitApp));
 
         _icon = new Forms.NotifyIcon
@@ -42,7 +42,7 @@ public sealed class TrayIcon : IDisposable
         => new(text, null, (_, _) => action())
         {
             AutoSize = false,
-            Width = 208,
+            Width = 220,   // 与菜单等宽：文字/高亮/卡片水平中心对齐到菜单中心
             Height = 46,
             TextAlign = ContentAlignment.MiddleCenter,
             Padding = Forms.Padding.Empty,
@@ -105,7 +105,7 @@ public sealed class TrayIcon : IDisposable
             e.Graphics.DrawPath(pen, path);
         }
 
-        // 悬停高亮：圆角灰色块，与主窗口标题栏按钮的悬停色（#3A3A41）保持一致
+        // 悬停高亮：左右打通的整块灰色，无圆角；裁剪到菜单圆角形状内避免溢出四角
         protected override void OnRenderMenuItemBackground(Forms.ToolStripItemRenderEventArgs e)
         {
             if (!e.Item.Selected)
@@ -114,18 +114,24 @@ public sealed class TrayIcon : IDisposable
                 return;
             }
             var r = e.Item.Bounds;
-            var bounds = new Rectangle(r.X + 2, r.Y + 1, r.Width - 4, r.Height - 2);
-            using var path = RoundedRect(bounds, 6);
             using var brush = new SolidBrush(Color.FromArgb(58, 58, 65));
-            e.Graphics.SmoothingMode = SmoothingMode.AntiAlias;
-            e.Graphics.FillPath(brush, path);
+            var state = e.Graphics.Save();
+            using (var clip = RoundedRect(
+                new Rectangle(0, 0, e.ToolStrip!.Width - 1, e.ToolStrip.Height - 1), Radius))
+                e.Graphics.SetClip(clip, CombineMode.Intersect);
+            e.Graphics.FillRectangle(brush, r);
+            e.Graphics.Restore(state);
         }
 
-        // 强制水平+垂直居中，规避 ToolStripMenuItem TextAlign 在部分布局下的偏差
+        // 直接在整块卡片 bounds 上水平+垂直居中绘制文字：
+        // 规避 e.TextRectangle 被布局引擎放到卡片顶部、VerticalCenter 只在
+        // "贴顶矩形"里居中导致文字整体偏上的问题
         protected override void OnRenderItemText(Forms.ToolStripItemTextRenderEventArgs e)
         {
-            e.TextFormat |= Forms.TextFormatFlags.HorizontalCenter | Forms.TextFormatFlags.VerticalCenter;
-            base.OnRenderItemText(e);
+            var r = e.Item.Bounds;
+            Forms.TextRenderer.DrawText(e.Graphics, e.Text, e.TextFont, r, e.TextColor,
+                Forms.TextFormatFlags.HorizontalCenter | Forms.TextFormatFlags.VerticalCenter
+                | Forms.TextFormatFlags.SingleLine);
         }
 
         private static GraphicsPath RoundedRect(Rectangle r, int radius)

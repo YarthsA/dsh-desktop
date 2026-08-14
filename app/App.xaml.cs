@@ -54,11 +54,12 @@ public partial class App : Application
         {
             _mainWindow = new MainWindow();
             _tray = new TrayIcon(_mainWindow.ShowFromTray, ExitFromTray);
-            _mainWindow.Show();
-            _mainWindow.Activate();
-            // 启动完成时若用户正停在别的最大化窗口，主窗口可能落在后面；
-            // 临时置顶几秒确保 UI 显示到最上方，随后恢复正常 z-order。
+            // 先置顶、声明不激活，再显示：若启动时用户停在别的最大化窗口，
+            // 直接以置顶姿态出现在最上方，避免 Activate() 因前台锁被拒而
+            // 触发任务栏按钮红色闪烁（splash 消失与窗口出现同帧完成，无空档）
             _mainWindow.Topmost = true;
+            _mainWindow.ShowActivated = false;
+            _mainWindow.Show();
             if (_splash != null)
             {
                 _splash.Close();
