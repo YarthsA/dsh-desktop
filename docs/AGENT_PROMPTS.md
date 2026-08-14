@@ -9,6 +9,16 @@
 
 ---
 
+## 已知安装坑（给 agent 的教训，先读再动手）
+
+1. **.NET 10 Desktop Runtime 必须机器级安装**：apphost 只认 `C:\Program Files\dotnet`。用 dotnet-install 脚本装用户目录版（`%LOCALAPPDATA%\Microsoft\dotnet`）不生效，DshDesktop.exe 仍报 "You must install or update .NET"。必须 `winget install Microsoft.DotNet.DesktopRuntime.10`（弹 UAC，需用户点确认）。这是唯一必须人工接管的一步。
+2. **git-bash / MSYS 下 `taskkill /PID <pid> /T /F` 会被路径转换搞坏**（`/PID` 被当成路径）。用 `MSYS_NO_PATHCONV=1 taskkill ...` 或 `cmd /c "taskkill ..."`。
+3. **孤儿服务**：attach 模式下 app 退出不停服务。识别：`netstat -ano | findstr :3080` 拿到 PID，再 `tasklist /FI "PID eq <pid>"` 看是不是 pnpm/node。清理：`taskkill /PID <顶层进程> /T /F`。
+4. **验证用一次性脚本，不要分步手工探测**：`powershell -ExecutionPolicy Bypass -File scripts\verify-install.ps1 -AppDir <app目录>`，一条命令输出 PASS/FAIL（前置、config、选择器补丁、端口 3080、HTTP 200、服务归属）。
+5. **目录选择器报 `directory picker failed: ... win32 folder dialog worker exited before reporting a result`**：dsh 的原生 picker 子进程在桌面壳托管环境可能无结果退出，且 dsh 已删除其 PowerShell 兜底层。managed 模式下 app 启动服务前会自动打幂等补丁恢复兜底（`scripts\fix-directory-picker.ps1`）；若补丁未生效，手动跑该脚本并检查输出。
+
+---
+
 ## Prompt A：从零开始（没有 Web UI，什么都没有）
 
 适用：你还没有 dsh 的 Web UI，需要 agent 帮你从零搭好环境，最后能用 dsh-desktop。
@@ -33,9 +43,9 @@
 4. 询问用户是否需要 subagent 委派；需要则指导安装 Claude Code 或 Codex CLI（不要擅自全局安装）。
 5. 启动验证 Web UI：pnpm dsh web（或 npx @deepseek-ai/dsh web），确认 http://127.0.0.1:3080 返回 200。
 6. 告诉用户在 Web UI 的 Settings → Models 配置 API key（这一步需要用户自己填，不能替你操作）。
-7. 构建 dsh-desktop：在其 app 目录执行 dotnet publish -c Release -r win-x64 --self-contained false（需 .NET 10 SDK；或直接下载 Release zip）。
-8. 在 exe 旁创建 config.json，dshDir 指向第 2 步的克隆目录；双击 DshDesktop.exe 验证窗口打开并加载 Web UI。
-9. 交付总结：报告最终 config.json 内容、服务由谁托管（attach 还是 managed）、托盘退出行为。
+7. 构建 dsh-desktop：`powershell -ExecutionPolicy Bypass -File scripts\build-release.ps1`（框架依赖，目标机需 .NET 10 Desktop Runtime；或 `-SelfContained` 免装运行时；也可以直接下载 Release zip）。
+8. 在 exe 旁创建 config.json，dshDir 指向第 2 步的克隆目录；用 `scripts\verify-install.ps1 -AppDir <app目录>` 验证（前置 + 服务 + 归属一次性输出），再双击 DshDesktop.exe 确认窗口加载 Web UI。
+9. 交付总结：报告最终 config.json 内容、服务由谁托管（attach 还是 managed）、托盘退出行为、verify-install.ps1 的最终结果。
 
 约束：
 - 不要修改 deepseek-harness 与 dsh-desktop 的任何源码。

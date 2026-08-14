@@ -150,6 +150,7 @@ public sealed class ServiceHost
             throw new FileNotFoundException($"未找到服务启动脚本：{script}");
 
         Log.Info($"启动 dsh 服务：{script} \"{_cfg.DshDir}\"");
+        RepairPickerIfNeeded();
         var psi = new ProcessStartInfo
         {
             // cmd /c ""script" "dir""：外层引号内再包一对引号，是给 cmd 传带空格参数的标准写法
@@ -162,6 +163,56 @@ public sealed class ServiceHost
         };
         _serviceProc?.Dispose();
         _serviceProc = Process.Start(psi);
+    }
+
+    // 目录选择器兜底：dsh 的原生 picker 子进程在桌面壳托管环境下可能无结果退出
+    // （"win32 folder dialog worker exited before reporting a result"），而 dsh 已
+    // 删除其 PowerShell 兜底层。这里对 dsh 源码 checkout 里已安装的 picker lib 做
+    // 幂等补丁，恢复该兜底；dsh 重新 build 或升级后补丁会被冲掉，下次启动自动重打。
+    // 仅当目标文件存在且未含补丁标记时才拉起 PowerShell，避免每次启动多起进程。
+    private void RepairPickerIfNeeded()
+    {
+        try
+        {
+            var pickerLib = Path.Combine(_cfg.DshDir, "packages", "host", "directory-picker-native", "lib", "index.js");
+            if (!File.Exists(pickerLib))
+            {
+                Log.Info("目录选择器补丁跳过：dsh 不是源码目录布局（npx 等方式不适用）");
+                return;
+            }
+            const string marker = "/* dsh-desktop: powershell fallback */";
+            if (File.ReadAllText(pickerLib).Contains(marker, StringComparison.Ordinal))
+            {
+                Log.Info("目录选择器补丁已就绪（无需重打）");
+                return;
+            }
+            var script = Path.Combine(AppContext.BaseDirectory, "scripts", "fix-directory-picker.ps1");
+            if (!File.Exists(script))
+            {
+                Log.Error("未找到补丁脚本 scripts/fix-directory-picker.ps1（构建/分发未包含？）");
+                return;
+            }
+            Log.Info($"应用目录选择器补丁：{script}");
+            var psi = new ProcessStartInfo
+            {
+                FileName = "powershell.exe",
+                Arguments = $"-NoProfile -ExecutionPolicy Bypass -File \"{script}\" \"{_cfg.DshDir}\"",
+                UseShellExecute = false,
+                CreateNoWindow = true,
+                WorkingDirectory = _cfg.DshDir,
+            };
+            using var proc = Process.Start(psi);
+            if (proc != null && proc.WaitForExit(20000))
+                Log.Info(proc.ExitCode == 0
+                    ? "目录选择器 PowerShell 兜底补丁已应用"
+                    : $"目录选择器补丁未应用（dsh 结构可能已变化，exit {proc.ExitCode}，不影响服务启动）");
+            else
+                Log.Error("目录选择器补丁脚本执行超时");
+        }
+        catch (Exception ex)
+        {
+            Log.Error($"目录选择器补丁失败（不影响服务启动）: {ex.Message}");
+        }
     }
 
     private static Config LoadConfig()

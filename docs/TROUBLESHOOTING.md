@@ -33,7 +33,31 @@ pnpm install
 
 ## 托盘「退出」后服务还在跑
 
-设计行为：app 只停**它自己拉起**的服务。如果你的服务是自己启动的（attach 模式），退出 app 不会动它。要停：`taskkill /PID <pid> /T /F`（pid 用 `netstat -ano | findstr :3080` 查），或关掉启动它的终端。
+设计行为：app 只停**它自己拉起**的服务。如果你的服务是自己启动的（attach 模式），退出 app 不会动它。要停：
+
+```bat
+netstat -ano | findstr :3080      :: 拿到 LISTENING 的 PID
+tasklist /FI "PID eq <pid>"       :: 看是 pnpm / node（attach 遗留）还是被 DshDesktop 托管
+taskkill /PID <顶层PID> /T /F     :: 整棵进程树杀掉
+```
+
+> 注意：在 git-bash 里 `taskkill /PID` 会被 MSYS 路径转换搞坏（`/PID` 被当路径），加 `MSYS_NO_PATHCONV=1` 前缀或用 `cmd /c`。
+
+## 目录选择器报 `directory picker failed: ... win32 folder dialog worker exited before reporting a result`
+
+在 WebUI 里选项目目录时 dsh 报这个错。根因：dsh 的原生 picker 会另起一个 koffi 驱动的子进程调用 Win32 文件夹对话框，在桌面壳托管环境下该子进程可能退出且未回报结果；dsh 在 2026-08-04 已删除它的 PowerShell 兜底层，失败直接上抛。
+
+修复（dsh-desktop 已内置，幂等）：
+
+- **managed 模式**（app 托管 dsh 源码目录）：app 每次启动服务前自动检查并打「PowerShell 兜底」补丁，无需手工操作。dsh 重新 `pnpm run build` 或升级后补丁被冲掉，下次启动自动重打。
+- **手动打补丁**：
+  ```powershell
+  powershell -ExecutionPolicy Bypass -File scripts\fix-directory-picker.ps1 -DshDir <dsh源码目录>
+  ```
+  补丁给 `packages\host\directory-picker-native\lib\index.js` 的 win32 分支加 try/catch：原生 worker 失败时降级到 PowerShell `FolderBrowserDialog`。
+- 验证补丁是否生效：`scripts\verify-install.ps1` 的「Directory picker repair」一节会检查。
+
+> 若补丁脚本输出 `anchor not found ... skipping`，说明 dsh 构建产物结构已变，需等 dsh-desktop 更新补丁脚本（向 [YarthsA/dsh-desktop](https://github.com/YarthsA/dsh-desktop) 提 issue）。
 
 ## 运行中服务意外停止 / 页面打不开
 

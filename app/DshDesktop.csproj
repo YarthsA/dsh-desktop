@@ -20,6 +20,7 @@
   <ItemGroup>
     <None Include="..\dsh-icon.ico" CopyToOutputDirectory="PreserveNewest" Link="dsh-icon.ico" />
     <None Include="..\scripts\run-dsh-web.cmd" CopyToOutputDirectory="PreserveNewest" Link="scripts\run-dsh-web.cmd" />
+    <None Include="..\scripts\fix-directory-picker.ps1" CopyToOutputDirectory="PreserveNewest" Link="scripts\fix-directory-picker.ps1" />
   </ItemGroup>
 
   <ItemGroup>

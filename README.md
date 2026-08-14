@@ -20,6 +20,12 @@ dsh-desktop 只是**壳**：要真正跑任务，你还需要 dsh Web UI 在运�
 | [.NET 10 Desktop Runtime](https://dotnet.microsoft.com/download/dotnet/10.0) | 使用自包含构建则无需 |
 | dsh Web UI 或源码 | **二选一**：已在运行（attach 模式，无需配置）或源码目录（managed 模式，需 `pnpm install`） |
 
+> **装 .NET 10**：`winget install Microsoft.DotNet.DesktopRuntime.10`（需管理员）。⚠️ 用 dotnet-install 脚本装**用户目录版不生效**——apphost 只认 `C:\Program Files\dotnet`，装完照样报 "You must install or update .NET"。想完全免装运行时，用 `scripts\build-release.ps1 -SelfContained` 构建自包含包。
+
+> **装好后一键验证**：`powershell -ExecutionPolicy Bypass -File scripts\verify-install.ps1 -AppDir <app目录>`（前置、config、选择器补丁、服务与归属一条命令输出 PASS/FAIL）。
+
+> **目录选择器修复**：dsh 的原生目录选择器在桌面壳托管环境下可能报 `directory picker failed: ... win32 folder dialog worker exited before reporting a result`（详见 [TROUBLESHOOTING.md](docs/TROUBLESHOOTING.md)）。managed 模式 app 启动服务前会自动打「PowerShell 兜底」幂等补丁。
+
 > 按你的情况选路径：**[docs/QUICKSTART.md](docs/QUICKSTART.md)**（已装 / 未装 Web UI、有无 agent 四种场景），想让 Claude Code / Codex 帮你装或排查：**[docs/AGENT_PROMPTS.md](docs/AGENT_PROMPTS.md)**。
 
 ## 文档
@@ -40,7 +46,7 @@ dotnet publish -c Release -r win-x64 --self-contained false
 powershell -ExecutionPolicy Bypass -File scripts/build-release.ps1
 ```
 
-> 想做成免安装的单文件分发，改用 `--self-contained true`（体积更大，但无需本机装 .NET）。
+> 想做成免安装的单文件分发：`powershell -ExecutionPolicy Bypass -File scripts/build-release.ps1 -SelfContained`（体积更大，但无需本机装 .NET，自动产出 zip）。
 
 ## 配置
 

@@ -44,6 +44,9 @@ dsh-desktop 只是一个**桌面壳**：它把 [DeepSeek Harness](https://github
    > 不建也行：app 会按 `DSH_DIR` 环境变量 → 相对 exe 向上查找 `deepseek-harness`（同名目录 + package.json）的顺序自动定位。
 3. 双击 `DshDesktop.exe`：app 以隐藏窗口调用 `pnpm dsh web` 拉起服务，就绪后加载 Web UI
 4. 托盘「退出」= 停掉服务并关闭 app
+5. 验证：`powershell -ExecutionPolicy Bypass -File scripts\verify-install.ps1 -AppDir <app 目录>`（一条命令检查前置、补丁、服务与归属）
+
+> 托管（managed）模式下，app 启动服务前会自动给 dsh 的目录选择器打「PowerShell 兜底」补丁（幂等，dsh 重新 build 后自动重打）。想手动打：`powershell -ExecutionPolicy Bypass -File scripts\fix-directory-picker.ps1 -DshDir <dshDir>`。
 
 ## 场景 2：从零开始
 
@@ -58,6 +61,24 @@ dsh-desktop 只是一个**桌面壳**：它把 [DeepSeek Harness](https://github
 3. 打开 `http://127.0.0.1:3080`，在 **Settings → Models** 配置 API key，验证 Web UI 可用
 4. 回到[场景 0](#场景-0web-ui-已经在跑)（npx 方式）或[场景 1](#场景-1有-dsh-源码但-web-ui-没跑起来过)（源码方式）
 5. 安装 dsh-desktop 前还需要：Windows 11（或 Win10 + 自装 [WebView2 Runtime](https://developer.microsoft.com/microsoft-edge/webview2/)）、[.NET 10 Desktop Runtime](https://dotnet.microsoft.com/download/dotnet/10.0)（用自包含构建则无需）
+
+### 安装 .NET 10 Desktop Runtime
+
+Release 包是**框架依赖**构建，运行需要 .NET 10 Desktop Runtime **机器级**安装（需要管理员）：
+
+```powershell
+winget install Microsoft.DotNet.DesktopRuntime.10
+```
+
+> ⚠️ **不要用 dotnet-install 脚本装用户目录版**：apphost（DshDesktop.exe）只认 `C:\Program Files\dotnet`（机器级），用户目录版装了照样报 "You must install or update .NET to run this application"。必须走机器级安装。
+>
+> 想完全免装运行时：用 `scripts\build-release.ps1 -SelfContained` 构建自包含 zip（体积更大但零前置）。
+
+装好后一键验证：
+
+```powershell
+powershell -ExecutionPolicy Bypass -File scripts\verify-install.ps1 -AppDir <解压后的 app 目录>
+```
 
 ## 场景 3：让 agent 帮你装或排查
 
