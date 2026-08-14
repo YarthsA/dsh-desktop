@@ -2,6 +2,11 @@
 
 ## [Unreleased]
 
+### Added
+
+- 场景分层文档：`docs/QUICKSTART.md`（已装/未装 Web UI × 源码/npx × attach/managed）、`docs/AGENT_PROMPTS.md`（从零搭建/对接排查两份可复制 prompt）、`docs/TROUBLESHOOTING.md`
+- Issue 模板 `.github/ISSUE_TEMPLATE/bug_report.yml`：自动收集 dsh 场景、agent、app.log 等环境信息
+
 ## [0.1.0] - 2026-08-14
 
 首个公开版本：把 DeepSeek Harness 的 WebUI 封装成 Windows 桌面壳（WebView2 + C# WPF）。

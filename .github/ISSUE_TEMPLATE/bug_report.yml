@@ -1,0 +1,103 @@
+name: Bug 报告
+description: 报告 dsh-desktop 的问题（请按你的场景填写环境信息，能显著加快定位）
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        感谢反馈！请先看 [TROUBLESHOOTING](https://github.com/YarthsA/dsh-desktop/blob/main/docs/TROUBLESHOOTING.md) 确认不是已知问题。
+
+  - type: textarea
+    id: what-happened
+    attributes:
+      label: 现象描述
+      description: 发生了什么？期望是什么？
+      placeholder: 双击 exe 后窗口黑屏，没有任何报错。
+    validations:
+      required: true
+
+  - type: textarea
+    id: reproduce
+    attributes:
+      label: 复现步骤
+      value: |
+        1.
+        2.
+        3.
+    validations:
+      required: true
+
+  - type: dropdown
+    id: dsh-scenario
+    attributes:
+      label: 你的 dsh Web UI 情况（关键！）
+      description: 决定服务是 attach（挂接）还是 managed（托管）模式
+      options:
+        - 已有 Web UI 在运行（浏览器能打开 3080）
+        - 有源码目录，但 Web UI 没跑起来过
+        - 什么都没有，从零开始
+        - 不确定
+    validations:
+      required: true
+
+  - type: dropdown
+    id: dsh-launch
+    attributes:
+      label: dsh 的启动方式（若已有 Web UI）
+      options:
+        - pnpm dsh web（源码方式）
+        - npx @deepseek-ai/dsh web
+        - 其他 / 不确定
+        - 不适用
+
+  - type: dropdown
+    id: agent
+    attributes:
+      label: 你机器上安装的 agent（可选，与 dsh-desktop 无直接关系）
+      options:
+        - 无
+        - Claude Code
+        - Codex
+        - 都有
+        - 不确定
+
+  - type: input
+    id: version
+    attributes:
+      label: dsh-desktop 版本
+      description: Release 文件名里的版本号（如 v0.1.0）
+    validations:
+      required: true
+
+  - type: dropdown
+    id: os
+    attributes:
+      label: Windows 版本
+      options:
+        - Windows 11
+        - Windows 10
+        - 其他
+    validations:
+      required: true
+
+  - type: textarea
+    id: log
+    attributes:
+      label: app.log 内容
+      description: 打开 %LOCALAPPDATA%\DshDesktop\app.log，粘贴最近 20~30 行
+      render: text
+    validations:
+      required: true
+
+  - type: textarea
+    id: config
+    attributes:
+      label: config.json 内容（如有）
+      description: exe 旁的 config.json；注意不要把 API key 等敏感信息贴进来
+      render: json
+
+  - type: textarea
+    id: extra
+    attributes:
+      label: 补充信息
+      description: 截图、端口占用情况（netstat -ano | findstr :3080）等
