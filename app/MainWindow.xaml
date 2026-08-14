@@ -71,14 +71,22 @@
                 </StackPanel>
                 <StackPanel Orientation="Horizontal" HorizontalAlignment="Right"
                             WindowChrome.IsHitTestVisibleInChrome="True">
+                    <Button x:Name="RefreshButton" Style="{StaticResource TitleButton}"
+                            Content="&#xE72C;" Click="RefreshButton_OnClick" ToolTip="刷新页面 (F5)"/>
+                    <Button x:Name="DevToolsButton" Style="{StaticResource TitleButton}"
+                            Content="&#xE943;" Click="DevToolsButton_OnClick" ToolTip="开发者工具 (DevTools)"/>
                     <Button x:Name="MinButton" Style="{StaticResource TitleButton}"
                             Content="&#xE921;" Click="MinButton_OnClick"/>
+                    <Button x:Name="MaxButton" Style="{StaticResource TitleButton}"
+                            Content="&#xE922;" Click="MaxButton_OnClick" ToolTip="最大化/还原"/>
                     <Button x:Name="CloseButton" Style="{StaticResource TitleCloseButton}"
                             Content="&#xE8BB;" Click="CloseButton_OnClick"/>
                 </StackPanel>
             </Grid>
         </Border>
 
-        <wv2:WebView2 x:Name="Browser" Grid.Row="1"/>
+        <!-- WebView2 是独立子 HWND，会盖住窗口边缘导致收不到 resize 命中；
+             四周留 6px 边距露出窗口自身表面，缩放指针/边缘拖拽才能生效 -->
+        <wv2:WebView2 x:Name="Browser" Grid.Row="1" Margin="6,0,6,6"/>
     </Grid>
 </Window>

@@ -22,7 +22,7 @@ jobs:
 
       - name: Build
         working-directory: app
-        run: dotnet build -c Release --no-restore
+        run: dotnet build -c Release -r win-x64 --no-restore
 
       - name: Publish
         working-directory: app

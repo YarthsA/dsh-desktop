@@ -16,3 +16,4 @@ rem  and nested setlocal + cd /d makes pnpm resolve the wrong workspace dir)
 set PWD=
 set INIT_CWD=
 pnpm dsh web
+exit /b %errorlevel%

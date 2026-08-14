@@ -9,7 +9,7 @@
     <UseWindowsForms>true</UseWindowsForms>
     <AssemblyName>DshDesktop</AssemblyName>
     <RootNamespace>DshDesktop</RootNamespace>
-    <Version>0.0.1</Version>
+    <Version>0.1.0</Version>
     <ApplicationIcon>..\dsh-icon.ico</ApplicationIcon>
   </PropertyGroup>
 
@@ -19,6 +19,7 @@
 
   <ItemGroup>
     <None Include="..\dsh-icon.ico" CopyToOutputDirectory="PreserveNewest" Link="dsh-icon.ico" />
+    <None Include="..\scripts\run-dsh-web.cmd" CopyToOutputDirectory="PreserveNewest" Link="scripts\run-dsh-web.cmd" />
   </ItemGroup>
 
   <ItemGroup>

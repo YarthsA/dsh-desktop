@@ -5,19 +5,19 @@ namespace DshDesktop;
 
 public partial class SplashWindow : Window
 {
-    private static readonly TimeSpan PulseDirection = TimeSpan.FromMilliseconds(1250);
+    private static readonly TimeSpan PulseDuration = TimeSpan.FromMilliseconds(1250);
 
     public SplashWindow()
     {
         InitializeComponent();
-        var pulse = new DoubleAnimation(0.35, 1.0, PulseDirection)
+        var pulse = new DoubleAnimation(0.35, 1.0, PulseDuration)
         {
             AutoReverse = true,
             RepeatBehavior = RepeatBehavior.Forever,
         };
         Logo.BeginAnimation(OpacityProperty, pulse);
 
-        var glow = new DoubleAnimation(0.5, 0.75, PulseDirection)
+        var glow = new DoubleAnimation(0.5, 0.75, PulseDuration)
         {
             AutoReverse = true,
             RepeatBehavior = RepeatBehavior.Forever,

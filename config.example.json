@@ -1,5 +1,6 @@
 {
   "dshDir": "C:\\path\\to\\deepseek-harness",
   "url": "http://127.0.0.1:3080/",
-  "pollTimeoutSec": 90
+  "pollTimeoutSec": 90,
+  "startMaximized": false
 }

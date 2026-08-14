@@ -7,26 +7,38 @@ namespace DshDesktop;
 
 public sealed class TrayIcon : IDisposable
 {
+    private const int MenuWidth = 132;
+    private const int MenuItemHeight = 46;
+    private const int MenuRadius = 10;
+
+    private static readonly Color MenuBackground = Color.FromArgb(28, 29, 34);
+    private static readonly Color MenuBackgroundOpaque = Color.FromArgb(245, 28, 29, 34);
+    private static readonly Color MenuHover = Color.FromArgb(58, 58, 65);
+    private static readonly Color MenuBorder = Color.FromArgb(96, 92, 94, 102);
+    private static readonly Color SeparatorColor = Color.FromArgb(58, 60, 68);
+    private static readonly Font MenuFont = new("Microsoft YaHei UI", 12f);
+
     private readonly Forms.NotifyIcon _icon;
 
     public TrayIcon(Action showWindow, Action exitApp)
     {
+        var width = MeasureMenuWidth();
         var menu = new Forms.ContextMenuStrip
         {
-            BackColor = Color.FromArgb(28, 29, 34),
+            BackColor = MenuBackground,
             ForeColor = Color.White,
             ShowImageMargin = false,
             DropShadowEnabled = false,
             // 必须关闭 AutoSize 并显式给定 Size：ContextMenuStrip 默认会
             // 按文本内容收缩，菜单项的固定宽度会被覆盖（表现为菜单没变大）
             AutoSize = false,
-            Size = new Size(132, 102),
+            Size = new Size(width, MenuItemHeight * 2 + 10),
             Padding = new Forms.Padding(6),
             Renderer = new RoundedMenuRenderer(),
         };
-        menu.Items.Add(MenuItem("显示", showWindow));
-        menu.Items.Add(new Forms.ToolStripSeparator { Margin = new Forms.Padding(0), Width = 132 });
-        menu.Items.Add(MenuItem("退出", exitApp));
+        menu.Items.Add(MenuItem("显示", showWindow, width));
+        menu.Items.Add(new Forms.ToolStripSeparator { Margin = new Forms.Padding(0), Width = width });
+        menu.Items.Add(MenuItem("退出", exitApp, width));
 
         _icon = new Forms.NotifyIcon
         {
@@ -38,16 +50,25 @@ public sealed class TrayIcon : IDisposable
         _icon.DoubleClick += (_, _) => showWindow();
     }
 
-    private static Forms.ToolStripMenuItem MenuItem(string text, Action action)
+    // 菜单宽度：文本按当前 DPI 实测，避免高 DPI 下固定宽度裁字；最小宽度保持 MenuWidth
+    private static int MeasureMenuWidth()
+    {
+        var textWidth = Math.Max(
+            Forms.TextRenderer.MeasureText("显示", MenuFont).Width,
+            Forms.TextRenderer.MeasureText("退出", MenuFont).Width);
+        return Math.Max(MenuWidth, textWidth + 12 /* 文本左缩进 */ + 12 /* 右留白 */);
+    }
+
+    private static Forms.ToolStripMenuItem MenuItem(string text, Action action, int width)
         => new(text, null, (_, _) => action())
         {
             AutoSize = false,
-            Width = 132,   // 与菜单等宽：文字/高亮/卡片水平中心对齐到菜单中心
-            Height = 46,
+            Width = width,   // 与菜单等宽：文字/高亮/卡片水平中心对齐到菜单中心
+            Height = MenuItemHeight,
             TextAlign = ContentAlignment.MiddleLeft,
             Padding = Forms.Padding.Empty,
             Margin = new Forms.Padding(0),
-            Font = new Font("Microsoft YaHei UI", 12f),
+            Font = MenuFont,
         };
 
     private static Icon LoadIcon()
@@ -70,28 +91,26 @@ public sealed class TrayIcon : IDisposable
 
     private sealed class DarkColorTable : Forms.ProfessionalColorTable
     {
-        public override Color ToolStripDropDownBackground => Color.FromArgb(28, 29, 34);
-        public override Color MenuItemSelected => Color.FromArgb(58, 58, 65);
+        public override Color ToolStripDropDownBackground => MenuBackground;
+        public override Color MenuItemSelected => MenuHover;
         public override Color MenuItemBorder => Color.Transparent;
         public override Color MenuBorder => Color.FromArgb(80, 82, 90);
-        public override Color SeparatorDark => Color.FromArgb(58, 60, 68);
-        public override Color SeparatorLight => Color.FromArgb(58, 60, 68);
-        public override Color ImageMarginGradientBegin => Color.FromArgb(28, 29, 34);
-        public override Color ImageMarginGradientMiddle => Color.FromArgb(28, 29, 34);
-        public override Color ImageMarginGradientEnd => Color.FromArgb(28, 29, 34);
+        public override Color SeparatorDark => SeparatorColor;
+        public override Color SeparatorLight => SeparatorColor;
+        public override Color ImageMarginGradientBegin => MenuBackground;
+        public override Color ImageMarginGradientMiddle => MenuBackground;
+        public override Color ImageMarginGradientEnd => MenuBackground;
     }
 
     private sealed class RoundedMenuRenderer : Forms.ToolStripProfessionalRenderer
     {
-        private const int Radius = 10;
-
         public RoundedMenuRenderer() : base(new DarkColorTable()) { }
 
         protected override void OnRenderToolStripBackground(Forms.ToolStripRenderEventArgs e)
         {
             var bounds = new Rectangle(Point.Empty, e.ToolStrip.Size);
-            using var path = RoundedRect(bounds, Radius);
-            using var brush = new SolidBrush(Color.FromArgb(245, 28, 29, 34));
+            using var path = RoundedRect(bounds, MenuRadius);
+            using var brush = new SolidBrush(MenuBackgroundOpaque);
             e.Graphics.SmoothingMode = SmoothingMode.AntiAlias;
             e.Graphics.FillPath(brush, path);
         }
@@ -99,8 +118,8 @@ public sealed class TrayIcon : IDisposable
         protected override void OnRenderToolStripBorder(Forms.ToolStripRenderEventArgs e)
         {
             var bounds = new Rectangle(0, 0, e.ToolStrip.Width - 1, e.ToolStrip.Height - 1);
-            using var path = RoundedRect(bounds, Radius);
-            using var pen = new Pen(Color.FromArgb(96, 92, 94, 102), 1);
+            using var path = RoundedRect(bounds, MenuRadius);
+            using var pen = new Pen(MenuBorder, 1);
             e.Graphics.SmoothingMode = SmoothingMode.AntiAlias;
             e.Graphics.DrawPath(pen, path);
         }
@@ -116,11 +135,11 @@ public sealed class TrayIcon : IDisposable
                 return;
             }
             var r = new Rectangle(Point.Empty, e.Item.Size);
-            using var brush = new SolidBrush(Color.FromArgb(58, 58, 65));
+            using var brush = new SolidBrush(MenuHover);
             var state = e.Graphics.Save();
             using (var clip = RoundedRect(
                 new Rectangle(-e.Item.Bounds.X, -e.Item.Bounds.Y,
-                    e.ToolStrip!.Width - 1, e.ToolStrip.Height - 1), Radius))
+                    e.ToolStrip!.Width - 1, e.ToolStrip.Height - 1), MenuRadius))
                 e.Graphics.SetClip(clip, CombineMode.Intersect);
             e.Graphics.FillRectangle(brush, r);
             e.Graphics.Restore(state);
