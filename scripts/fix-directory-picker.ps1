@@ -94,12 +94,12 @@ $branchNew = @(
     'if (platform === "win32") {'
     "${tab}${tab}try {"
     "${tab}${tab}${tab}return await (internals.pickWin32Dialog ?? pickWin32Directory)(signal);"
-    "${tab}${tab}${tab}} catch (error) {"
-    "${tab}${tab}${tab}${tab}if (signal.aborted) throw error;"
-    "${tab}${tab}${tab}${tab}/* dsh-desktop: powershell fallback */"
-    "${tab}${tab}${tab}${tab}return await pickPowerShellDirectory();"
-    "${tab}${tab}${tab}}"
+    "${tab}${tab}} catch (error) {"
+    "${tab}${tab}${tab}if (signal.aborted) throw error;"
+    "${tab}${tab}${tab}/* dsh-desktop: powershell fallback */"
+    "${tab}${tab}${tab}return await pickPowerShellDirectory();"
     "${tab}${tab}}"
+    "${tab}}"
 ) -join $nl
 $content = $content.Replace($anchors[1], $branchNew)
 

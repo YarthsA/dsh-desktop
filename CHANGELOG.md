@@ -10,6 +10,8 @@
 ### Fixed
 
 - CI build 工作流：restore 补 `-r win-x64`，修复 NETSDK1047（assets 缺少 RID 目标）
+- 自包含构建 zip 排除运行残留（`config.json` 含构建机 dshDir 路径、`DshDesktop.exe.WebView2` 用户数据）
+- 目录选择器补丁脚本：修正 win32 分支 try/catch 的缩进（tab 计数多一级）
 
 ## [0.1.0] - 2026-08-14
 
