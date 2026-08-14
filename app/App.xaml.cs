@@ -1,4 +1,5 @@
 using System.Windows;
+using System.Windows.Threading;
 using Application = System.Windows.Application;
 using MessageBox = System.Windows.MessageBox;
 
@@ -54,11 +55,23 @@ public partial class App : Application
             _mainWindow = new MainWindow();
             _tray = new TrayIcon(_mainWindow.ShowFromTray, ExitFromTray);
             _mainWindow.Show();
+            _mainWindow.Activate();
+            // 启动完成时若用户正停在别的最大化窗口，主窗口可能落在后面；
+            // 临时置顶几秒确保 UI 显示到最上方，随后恢复正常 z-order。
+            _mainWindow.Topmost = true;
             if (_splash != null)
             {
                 _splash.Close();
                 _splash = null;
             }
+            var win = _mainWindow;
+            var timer = new DispatcherTimer { Interval = TimeSpan.FromSeconds(3) };
+            timer.Tick += (_, _) =>
+            {
+                timer.Stop();
+                win.Topmost = false;
+            };
+            timer.Start();
         });
 
         await Task.Run(ListenForShowEvent);

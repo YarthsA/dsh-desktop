@@ -17,11 +17,15 @@ public sealed class TrayIcon : IDisposable
             ForeColor = Color.White,
             ShowImageMargin = false,
             DropShadowEnabled = false,
-            Padding = new Forms.Padding(4),
+            // 必须关闭 AutoSize 并显式给定 Size：ContextMenuStrip 默认会
+            // 按文本内容收缩，菜单项的固定宽度会被覆盖（表现为菜单没变大）
+            AutoSize = false,
+            Size = new Size(220, 112),
+            Padding = new Forms.Padding(6),
             Renderer = new RoundedMenuRenderer(),
         };
         menu.Items.Add(MenuItem("显示", showWindow));
-        menu.Items.Add(new Forms.ToolStripSeparator());
+        menu.Items.Add(new Forms.ToolStripSeparator { Margin = new Forms.Padding(0) });
         menu.Items.Add(MenuItem("退出", exitApp));
 
         _icon = new Forms.NotifyIcon
@@ -38,10 +42,12 @@ public sealed class TrayIcon : IDisposable
         => new(text, null, (_, _) => action())
         {
             AutoSize = false,
-            Width = 168,
+            Width = 208,
+            Height = 46,
             TextAlign = ContentAlignment.MiddleCenter,
-            Padding = new Forms.Padding(0, 12, 0, 12),
-            Font = new Font("Segoe UI", 11f),
+            Padding = Forms.Padding.Empty,
+            Margin = new Forms.Padding(0),
+            Font = new Font("Microsoft YaHei UI", 12f),
         };
 
     private static Icon LoadIcon()

@@ -12,12 +12,12 @@
         SizeToContent="WidthAndHeight"
         WindowStartupLocation="CenterScreen">
     <Grid>
-        <Ellipse x:Name="Glow" Width="248" Height="248">
+        <Ellipse x:Name="Glow" Width="184" Height="184">
             <Ellipse.Fill>
                 <RadialGradientBrush>
-                    <GradientStop Color="#8C2EE6FF" Offset="0.0"/>
-                    <GradientStop Color="#382EE6FF" Offset="0.45"/>
-                    <GradientStop Color="#0033E0FF" Offset="1.0"/>
+                    <GradientStop Color="#26FFFFFF" Offset="0.0"/>
+                    <GradientStop Color="#0FFFFFFF" Offset="0.5"/>
+                    <GradientStop Color="#00FFFFFF" Offset="1.0"/>
                 </RadialGradientBrush>
             </Ellipse.Fill>
         </Ellipse>
