@@ -1,0 +1,29 @@
+<Window x:Class="DshDesktop.SplashWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        WindowStyle="None"
+        AllowsTransparency="True"
+        Background="Transparent"
+        Topmost="True"
+        ShowInTaskbar="False"
+        ShowActivated="False"
+        Focusable="False"
+        IsHitTestVisible="False"
+        SizeToContent="WidthAndHeight"
+        WindowStartupLocation="CenterScreen">
+    <Grid>
+        <Ellipse x:Name="Glow" Width="248" Height="248">
+            <Ellipse.Fill>
+                <RadialGradientBrush>
+                    <GradientStop Color="#8C2EE6FF" Offset="0.0"/>
+                    <GradientStop Color="#382EE6FF" Offset="0.45"/>
+                    <GradientStop Color="#0033E0FF" Offset="1.0"/>
+                </RadialGradientBrush>
+            </Ellipse.Fill>
+        </Ellipse>
+        <Image x:Name="Logo"
+               Source="pack://application:,,,/dsh-icon.png"
+               Width="160" Height="160"
+               RenderOptions.BitmapScalingMode="HighQuality"/>
+    </Grid>
+</Window>

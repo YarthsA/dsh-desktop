@@ -1,0 +1,34 @@
+name: release
+
+on:
+  push:
+    tags: ["v*"]
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: "10.0.x"
+
+      - name: Publish
+        working-directory: app
+        run: dotnet publish -c Release -r win-x64 --self-contained false
+
+      - name: Package
+        shell: powershell
+        run: |
+          $out = "app/bin/Release/net10.0-windows/win-x64/publish"
+          Compress-Archive -Path "$out/*" -DestinationPath "dsh-desktop-$env:GITHUB_REF_NAME-win-x64.zip" -Force
+
+      - name: Create Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: dsh-desktop-${{ github.ref_name }}-win-x64.zip
+          generate_release_notes: true

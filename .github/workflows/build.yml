@@ -1,0 +1,35 @@
+name: build
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  build:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: "10.0.x"
+
+      - name: Restore
+        working-directory: app
+        run: dotnet restore
+
+      - name: Build
+        working-directory: app
+        run: dotnet build -c Release --no-restore
+
+      - name: Publish
+        working-directory: app
+        run: dotnet publish -c Release -r win-x64 --self-contained false --no-build
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: dsh-desktop-win-x64
+          path: app/bin/Release/net10.0-windows/win-x64/publish

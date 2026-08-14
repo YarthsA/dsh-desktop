@@ -1,0 +1,18 @@
+# Build output
+**/bin/
+**/obj/
+*.user
+*.suo
+
+# Local runtime config (generated next to the exe on first run)
+app/config.json
+config.json
+
+# IDE
+.vs/
+.vscode/
+.idea/
+
+# Misc
+*.log
+TestResults/
