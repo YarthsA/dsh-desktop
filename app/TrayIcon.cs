@@ -20,12 +20,12 @@ public sealed class TrayIcon : IDisposable
             // 必须关闭 AutoSize 并显式给定 Size：ContextMenuStrip 默认会
             // 按文本内容收缩，菜单项的固定宽度会被覆盖（表现为菜单没变大）
             AutoSize = false,
-            Size = new Size(220, 112),
+            Size = new Size(132, 102),
             Padding = new Forms.Padding(6),
             Renderer = new RoundedMenuRenderer(),
         };
         menu.Items.Add(MenuItem("显示", showWindow));
-        menu.Items.Add(new Forms.ToolStripSeparator { Margin = new Forms.Padding(0), Width = 220 });
+        menu.Items.Add(new Forms.ToolStripSeparator { Margin = new Forms.Padding(0), Width = 132 });
         menu.Items.Add(MenuItem("退出", exitApp));
 
         _icon = new Forms.NotifyIcon
@@ -42,7 +42,7 @@ public sealed class TrayIcon : IDisposable
         => new(text, null, (_, _) => action())
         {
             AutoSize = false,
-            Width = 220,   // 与菜单等宽：文字/高亮/卡片水平中心对齐到菜单中心
+            Width = 132,   // 与菜单等宽：文字/高亮/卡片水平中心对齐到菜单中心
             Height = 46,
             TextAlign = ContentAlignment.MiddleLeft,
             Padding = Forms.Padding.Empty,
