@@ -10,17 +10,6 @@
 
 ![platform](https://img.shields.io/badge/platform-Windows%2011%2B-blue) ![dotnet](https://img.shields.io/badge/dotnet-.NET%2010%20Desktop-purple)
 
-## 特性
-
-- 🖥️ 原生桌面体验：无边框 + DWM 圆角窗口，WebView2 渲染，不打开浏览器
-- 🐋 启动 Splash：透明鲸鱼图标 + 荧光光晕，加载期闪烁，不阻塞操作
-- 🖱️ 系统托盘：关闭窗口 → 折叠到托盘（进程与服务常驻）；双击/右键恢复；托盘「退出」才停服务
-- ⚙️ 服务托管：自动拉起/检测 `pnpm dsh web`（**已运行时直接挂接**，不重复拉起），单实例互斥，进程树整棵回收；启动前预检 dshDir / node_modules，进程提前退出快速报错而非空等超时
-- ♻️ 掉线自愈：运行中服务意外停止 → 自动重启并刷新页面（自动重启失败才弹框询问）；仅"端口拒绝连接"确认停止才快速重启，响应慢的活服务不会被误杀
-- 🛡️ WebView2 崩溃自愈：渲染/浏览器进程异常退出自动重载兜底（30 秒内崩溃超 3 次才停止，避免死循环）
-- 📝 本地日志：`%LOCALAPPDATA%\DshDesktop\app.log`，服务启动/退出/重启与错误均可追溯，超过 1MB 自动轮转
-- 📦 可移植：服务路径由 `config.json` / `DSH_DIR` 配置，无硬编码绝对路径
-
 ## 前置要求
 
 dsh-desktop 只是**壳**：要真正跑任务，你还需要 dsh Web UI 在运行，并在 Web UI 的 **Settings → Models** 配置模型 Provider（至少一个 DeepSeek API key）。Claude Code / Codex CLI 是 dsh 的可选 subagent 后端，**不是** dsh-desktop 的依赖。
